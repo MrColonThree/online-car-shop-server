@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
     const productCollection = client.db("productDB").collection("products");
     const brandCollection = client.db("BrandDB").collection("brands");
+    const cartCollection = client.db("cartDB").collection("cartProduct");
 
     // to get brands
     app.get("/brands", async (req, res) => {
@@ -46,19 +47,31 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    app.get("/cart", async (req, res) => {
+      const cursor = cartCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollection.findOne(query);
-      console.log(id);
       res.send(result);
     });
+
+    // to get products of cart
 
     // to add products
     app.post("/addProduct", async (req, res) => {
       const product = req.body;
       const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+    // to add products in cart
+    app.post("/cart", async (req, res) => {
+      const cartProduct = req.body;
+      const result = await cartCollection.insertOne(cartProduct);
       res.send(result);
     });
     // to update products
@@ -85,6 +98,15 @@ async function run() {
         product,
         options
       );
+      res.send(result);
+    });
+
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: id };
+      const result = await cartCollection.deleteOne(query);
+      console.log(result);
       res.send(result);
     });
 
