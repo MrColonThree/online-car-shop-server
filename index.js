@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 7000;
 require("dotenv").config();
@@ -35,10 +35,9 @@ async function run() {
 
     app.get("/brand/:name", async (req, res) => {
       const name = req.params.name;
-      console.log(name)
+      console.log(name);
       const query = { brand_name: name };
       const result = await brandCollection.findOne(query);
-      console.log(result)
       res.send(result);
     });
 
@@ -52,6 +51,27 @@ async function run() {
     app.post("/addProduct", async (req, res) => {
       const product = req.body;
       const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+    // to update products
+    app.put("/addProduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProduct = req.body;
+
+      const product = {
+        $set: {
+          name: updatedProduct.name,
+          brand: updatedProduct.brand,
+          image: updatedProduct.image,
+          type: updatedProduct.type,
+          rating: updatedProduct.rating,
+          price: updatedProduct.price,
+          details: updatedProduct.details,
+        },
+      };
+      const result = productCollection.updateOne(filter, product, options);
       res.send(result);
     });
 
