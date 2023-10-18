@@ -35,7 +35,6 @@ async function run() {
 
     app.get("/brand/:name", async (req, res) => {
       const name = req.params.name;
-      console.log(name);
       const query = { brand_name: name };
       const result = await brandCollection.findOne(query);
       res.send(result);
@@ -47,6 +46,15 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      console.log(id);
+      res.send(result);
+    });
+
     // to add products
     app.post("/addProduct", async (req, res) => {
       const product = req.body;
@@ -54,12 +62,13 @@ async function run() {
       res.send(result);
     });
     // to update products
-    app.put("/addProduct/:id", async (req, res) => {
+    app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
+      console.log(id);
       const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
       const updatedProduct = req.body;
-
+      const options = { upsert: true };
+      console.log(updatedProduct);
       const product = {
         $set: {
           name: updatedProduct.name,
@@ -71,7 +80,11 @@ async function run() {
           details: updatedProduct.details,
         },
       };
-      const result = productCollection.updateOne(filter, product, options);
+      const result = await productCollection.updateOne(
+        filter,
+        product,
+        options
+      );
       res.send(result);
     });
 
