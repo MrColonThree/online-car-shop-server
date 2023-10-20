@@ -23,10 +23,18 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const bannerCollection = client.db("bannerDB").collection("banners");
     const productCollection = client.db("productDB").collection("products");
     const brandCollection = client.db("BrandDB").collection("brands");
     const cartCollection = client.db("cartDB").collection("cartProduct");
+    const teamCollection = client.db("teamDB").collection("team");
 
+    // to get banner data
+    app.get("/banners", async (req, res) => {
+      const cursor = bannerCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
     // to get brands
     app.get("/brands", async (req, res) => {
       const cursor = brandCollection.find();
@@ -47,9 +55,11 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    // to get cart products
     app.get("/cart", async (req, res) => {
       const cursor = cartCollection.find();
       const result = await cursor.toArray();
+      console.log(result);
       res.send(result);
     });
 
@@ -59,8 +69,12 @@ async function run() {
       const result = await productCollection.findOne(query);
       res.send(result);
     });
-
-    // to get products of cart
+    // to get team members
+    app.get("/team", async (req, res) => {
+      const cursor = teamCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     // to add products
     app.post("/addProduct", async (req, res) => {
@@ -71,13 +85,14 @@ async function run() {
     // to add products in cart
     app.post("/cart", async (req, res) => {
       const cartProduct = req.body;
+      console.log(cartProduct);
+      delete cartProduct._id;
       const result = await cartCollection.insertOne(cartProduct);
       res.send(result);
     });
     // to update products
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const filter = { _id: new ObjectId(id) };
       const updatedProduct = req.body;
       const options = { upsert: true };
@@ -103,8 +118,7 @@ async function run() {
 
     app.delete("/cart/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
-      const query = { _id: id };
+      const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       console.log(result);
       res.send(result);
