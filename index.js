@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 7000;
 require("dotenv").config();
 // middleware
@@ -22,12 +22,13 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const bannerCollection = client.db("bannerDB").collection("banners");
     const productCollection = client.db("productDB").collection("products");
     const brandCollection = client.db("BrandDB").collection("brands");
     const cartCollection = client.db("cartDB").collection("cartProduct");
     const teamCollection = client.db("teamDB").collection("team");
+    const contactCollection = client.db("contactDB").collection("contact");
 
     // to get banner data
     app.get("/banners", async (req, res) => {
@@ -59,7 +60,6 @@ async function run() {
     app.get("/cart", async (req, res) => {
       const cursor = cartCollection.find();
       const result = await cursor.toArray();
-      console.log(result);
       res.send(result);
     });
 
@@ -75,6 +75,12 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    // to get contact data
+    app.get("/contact", async (req, res) => {
+      const cursor = contactCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     // to add products
     app.post("/addProduct", async (req, res) => {
@@ -85,8 +91,6 @@ async function run() {
     // to add products in cart
     app.post("/cart", async (req, res) => {
       const cartProduct = req.body;
-      console.log(cartProduct);
-      delete cartProduct._id;
       const result = await cartCollection.insertOne(cartProduct);
       res.send(result);
     });
@@ -96,7 +100,6 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updatedProduct = req.body;
       const options = { upsert: true };
-      console.log(updatedProduct);
       const product = {
         $set: {
           name: updatedProduct.name,
@@ -120,14 +123,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
-      console.log(result);
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
